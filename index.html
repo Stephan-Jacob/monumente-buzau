@@ -3,113 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buzău Heritage - Analiză UAT</title>
+    <title>Buzău</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         #map { height: 600px; width: 100%; border-radius: 24px; z-index: 1; }
-        .stat-card { transition: transform 0.2s; }
-        .stat-card:hover { transform: scale(1.02); }
+        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
     </style>
 </head>
-<body class="bg-[#0f172a] text-slate-200 font-sans min-h-screen">
+<body class="bg-[#020617] text-slate-200 font-sans min-h-screen">
 
-    <header class="p-8 max-w-7xl mx-auto border-b border-slate-800 mb-8">
-        <h1 class="text-5xl font-black bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent italic tracking-tighter">BUZĂU PATRIMONIU</h1>
-        <p class="mt-2 text-slate-500 font-medium">Dashboard Interactiv - Monumente Buzau</p>
+    <header class="p-8 max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-end gap-4 border-b border-slate-800/50 mb-8">
+        <div>
+            <h1 class="text-5xl font-black bg-gradient-to-br from-amber-400 via-orange-500 to-rose-600 bg-clip-text text-transparent italic tracking-tighter">BUZĂU PATRIMONIU</h1>
+            <p class="mt-2 text-slate-500 font-bold uppercase tracking-widest text-[10px]">Analiză</p>
+        </div>
+        <div class="flex gap-4">
+            <div class="glass p-4 rounded-2xl text-center min-w-[120px]">
+                <span class="block text-[10px] text-slate-500 font-bold mb-1 uppercase">Obiective</span>
+                <span class="text-2xl font-black text-white">892</span>
+            </div>
+            <div class="glass p-4 rounded-2xl text-center min-w-[120px]">
+                <span class="block text-[10px] text-slate-500 font-bold mb-1 uppercase">UAT-uri</span>
+                <span class="text-2xl font-black text-amber-500">76</span>
+            </div>
+        </div>
     </header>
 
     <main class="max-w-7xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-12 gap-8 pb-20">
         <div class="lg:col-span-4 space-y-6">
-            <div id="info-panel" class="bg-slate-800/50 p-8 rounded-[2rem] border border-slate-700 shadow-2xl backdrop-blur-md sticky top-8">
-                <div id="no-data">
-                    <h2 class="text-2xl font-bold text-white mb-4 uppercase">Explorator UAT</h2>
-                    <p class="text-slate-400 leading-relaxed">Dă click pe un marker de pe hartă pentru a vedea analiza patrimoniului din comuna sau orașul respectiv.</p>
-                    <div class="mt-8 flex justify-center"><span class="animate-bounce text-4xl">📍</span></div>
+            <div id="sidebar" class="glass p-8 rounded-[2.5rem] shadow-2xl sticky top-8">
+                <div id="empty-state">
+                    <h2 class="text-2xl font-bold text-white mb-4 italic uppercase">Explorator Județean</h2>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">Selectează un punct de pe hartă pentru a interoga baza de date LMI procesată.</p>
+                    <div class="w-full aspect-square rounded-3xl bg-slate-800/50 border border-slate-700/50 flex items-center justify-center border-dashed border-2">
+                        <span class="text-5xl animate-pulse">🏛️</span>
+                    </div>
                 </div>
 
-                <div id="data-panel" class="hidden space-y-6">
+                <div id="data-content" class="hidden space-y-6">
                     <div>
-                        <h2 id="name-display" class="text-4xl font-black text-white tracking-tight uppercase italic">Comuna</h2>
-                        <span id="period-display" class="inline-block mt-2 px-3 py-1 bg-emerald-500/20 text-emerald-400 text-[10px] font-bold rounded-full border border-emerald-500/30 uppercase tracking-widest">Secolul XVIII</span>
+                        <h2 id="uat-name" class="text-4xl font-black text-white tracking-tighter uppercase italic leading-none">Localitate</h2>
+                        <span id="uat-period" class="inline-block mt-3 px-3 py-1 bg-amber-500/20 text-amber-400 text-[10px] font-bold rounded-full border border-amber-500/30 uppercase tracking-widest italic">Epoca</span>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-700">
-                            <span class="block text-[10px] text-slate-500 font-bold mb-1">ARHITECTURĂ</span>
-                            <div id="val-arh" class="text-2xl font-black text-blue-400">0</div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-900/40 p-4 rounded-2xl border border-slate-800">
+                            <span class="block text-[9px] text-slate-500 font-bold mb-1">ARHITECTURĂ</span>
+                            <div id="val-rh" class="text-xl font-black text-blue-400">0</div>
                         </div>
-                        <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-700">
-                            <span class="block text-[10px] text-slate-500 font-bold mb-1">ARHEOLOGIE</span>
-                            <div id="val-arg" class="text-2xl font-black text-emerald-400">0</div>
+                        <div class="bg-slate-900/40 p-4 rounded-2xl border border-slate-800">
+                            <span class="block text-[9px] text-slate-500 font-bold mb-1">ARHEOLOGIE</span>
+                            <div id="val-rg" class="text-xl font-black text-emerald-400">0</div>
                         </div>
                     </div>
 
-                    <div class="p-6 bg-red-500/10 rounded-2xl border border-red-500/20">
+                    <div class="space-y-3">
+                        <div class="p-4 bg-slate-900/40 rounded-2xl border border-slate-800">
+                            <span class="block text-[9px] text-slate-500 font-bold mb-1 uppercase tracking-widest">Tip Majoritar & Cult</span>
+                            <div id="val-type-cult" class="text-xs font-bold text-slate-200">Nespecificat</div>
+                        </div>
+                    </div>
+
+                    <div class="p-6 bg-rose-600/10 rounded-[2rem] border border-rose-600/20 shadow-inner">
                         <div class="flex justify-between items-end mb-2">
-                            <span class="text-xs font-bold text-red-400 uppercase tracking-tighter">Indicator Degradare</span>
-                            <span id="val-crit" class="text-3xl font-black text-red-500">0</span>
+                            <span class="text-[10px] font-black text-rose-500 uppercase tracking-tighter">Indicator Degradare</span>
+                            <span id="val-crit" class="text-3xl font-black text-rose-600 leading-none">0</span>
                         </div>
-                        <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
-                            <div id="crit-bar" class="bg-red-500 h-full transition-all duration-700" style="width: 0%"></div>
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div id="crit-bar" class="bg-gradient-to-r from-orange-500 to-rose-600 h-full transition-all duration-1000 ease-out" style="width: 0%"></div>
                         </div>
-                        <p class="text-[10px] text-red-400/60 mt-2 italic">*Obiective în stare critică (ruine/proastă/demolat)</p>
+                        <p class="text-[9px] text-rose-400/60 mt-2 italic font-medium uppercase tracking-widest text-center">*Monumente în stare critică/ruine</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="lg:col-span-8 group relative">
-            <div id="map" class="border-4 border-slate-800 shadow-2xl"></div>
-            <div class="absolute top-4 right-4 bg-slate-900/80 p-3 rounded-xl border border-slate-700 text-[10px] font-bold z-[1000] text-slate-400 uppercase tracking-widest">
-                Marker Mărime = Volum Monumente
+        <div class="lg:col-span-8 relative">
+            <div id="map" class="shadow-2xl border-4 border-slate-800/50"></div>
+            <div class="absolute bottom-6 left-6 z-[1000] glass px-4 py-2 rounded-xl text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                Dimensiune Cerc = Volum Date
             </div>
         </div>
     </main>
 
     <script>
-        // BAZA DE DATE ANALITICĂ COMPLETĂ (76 UAT-uri)
-        const uatData = {"AMARU":{t:6,a:0,rh:0,rg:6,c:0,p:"Secolul IV"},"BALTA ALBĂ":{t:7,a:0,rh:3,rg:4,c:2,p:"Secolul III"},"BECENI":{t:1,a:0,rh:1,rg:0,c:0,p:"Secolul XX"},"BERCA":{t:19,a:13,rh:14,rg:3,c:5,p:"Secolul XVII"},"BISOCA":{t:3,a:3,rh:3,rg:0,c:0,p:"Secolul XVIII"},"BOLDU":{t:1,a:0,rh:1,rg:0,c:0,p:"Secolul 20"},"BOZIORU":{t:48,a:16,rh:31,rg:17,c:2,p:"Secolul XVI"},"BREAZA":{t:14,a:0,rh:0,rg:9,c:0,p:"Secolul XVIII"},"BRĂDEANU":{t:1,a:0,rh:0,rg:0,c:0,p:"Secolul XVIII"},"BRĂEŞTI":{t:7,a:0,rh:6,rg:1,c:1,p:"Secolul 19"},"BUDA":{t:1,a:0,rh:1,rg:0,c:0,p:"Secolul 18"},"BUZĂU":{t:82,a:19,rh:53,rg:15,c:3,p:"Secolul 20"},"C. A. ROSETTI":{t:3,a:0,rh:0,rg:1,c:0,p:"Secolul III"},"C.A. ROSETTI":{t:4,a:0,rh:0,rg:4,c:0,p:"Secolul III"},"CALVINI":{t:5,a:1,rh:4,rg:1,c:1,p:"Alte perioade"},"CERNĂTEŞTI":{t:14,a:0,rh:0,rg:13,c:1,p:"Alte perioade"},"CHILIILE":{t:3,a:0,rh:3,rg:0,c:0,p:"Secolul 19"},"CHIOJDU":{t:7,a:1,rh:6,rg:0,c:2,p:"Secolul XIX"},"CISLĂU":{t:8,a:0,rh:6,rg:1,c:1,p:"Secolul 18"},"COCHIRLEANCA":{t:6,a:0,rh:0,rg:6,c:0,p:"Secolul IV"},"COLŢI":{t:4,a:3,rh:3,rg:1,c:0,p:"Secolul XVI"},"COSTEŞTI":{t:7,a:0,rh:0,rg:7,c:0,p:"Alte perioade"},"COZIENI":{t:12,a:0,rh:10,rg:2,c:0,p:"Secolul 19"},"CĂNEŞTI":{t:1,a:0,rh:0,rg:1,c:0,p:"Alte perioade"},"CĂTINA":{t:9,a:0,rh:9,rg:0,c:2,p:"Secolul 20"},"FLORICA":{t:1,a:0,rh:0,rg:0,c:0,p:"Secolul XVIII"},"GHERGHEASA":{t:8,a:0,rh:0,rg:8,c:0,p:"Alte perioade"},"GHERĂSENI":{t:21,a:0,rh:0,rg:21,c:0,p:"Alte perioade"},"GLODEANU-SILIŞTEA":{t:8,a:0,rh:1,rg:6,c:0,p:"Secolul IV"},"GREABĂNU":{t:1,a:0,rh:1,rg:0,c:0,p:"Secolul 19"},"GREBĂNU":{t:8,a:4,rh:8,rg:0,c:0,p:"Secolul 19"},"GURA TEGHII":{t:1,a:0,rh:1,rg:0,c:0,p:"Secolul XIX"},"LARGU":{t:7,a:0,rh:1,rg:6,c:0,p:"Secolul III"},"LOPĂTARI":{t:5,a:0,rh:5,rg:0,c:0,p:"Secolul XX"},"LUCIU":{t:2,a:0,rh:0,rg:2,c:0,p:"Secolul XII"},"MEREI":{t:73,a:8,rh:11,rg:56,c:2,p:"Alte perioade"},"MOVILA BANULUI":{t:3,a:0,rh:0,rg:2,c:0,p:"Secolul IX"},"MURGEŞTI":{t:1,a:0,rh:0,rg:1,c:0,p:"Alte perioade"},"MÂNZĂLEŞTI":{t:3,a:0,rh:3,rg:0,c:0,p:"Secolul XX"},"MĂGURA":{t:12,a:3,rh:11,rg:0,c:6,p:"Secolul 20"},"MĂRGĂRITEŞTI":{t:6,a:3,rh:6,rg:0,c:0,p:"Secolul 18"},"MĂRĂCINENI":{t:1,a:0,rh:1,rg:0,c:0,p:"Secolul XVIII"},"NEHOIU":{t:17,a:3,rh:6,rg:11,c:0,p:"Secolul XIX"},"NĂENI":{t:21,a:4,rh:3,rg:18,c:0,p:"Alte perioade"},"ODĂILE":{t:1,a:0,rh:1,rg:0,c:0,p:"Secolul 19"},"PADINA":{t:1,a:0,rh:0,rg:0,c:0,p:"Secolul 19"},"PARDOŞI":{t:1,a:0,rh:1,rg:0,c:0,p:"Secolul 18"},"PIETROASELE":{t:76,a:5,rh:2,rg:71,c:0,p:"Alte perioade"},"PODGORIA":{t:5,a:0,rh:2,rg:3,c:1,p:"Alte perioade"},"POŞTA CÂLNĂU":{t:13,a:0,rh:0,rg:13,c:0,p:"Alte perioade"},"PÂRSCOV":{t:15,a:0,rh:6,rg:7,c:1,p:"Secolul 19"},"PĂNĂTĂU":{t:10,a:1,rh:4,rg:1,c:0,p:"Secolul 19"},"PĂTÂRLAGELE":{t:25,a:0,rh:6,rg:18,c:0,p:"Alte perioade"},"RACOVIŢENI":{t:4,a:0,rh:0,rg:4,c:0,p:"Secolul IV"},"RUŞEŢU":{t:1,a:0,rh:1,rg:0,c:0,p:"Secolul XIX"},"RÂMNICELU":{t:11,a:0,rh:2,rg:9,c:0,p:"Alte perioade"},"RÂMNICU SĂRAT":{t:32,a:15,rh:29,rg:0,c:1,p:"Secolul 18"},"SCORŢOASA":{t:3,a:0,rh:1,rg:2,c:0,p:"Alte perioade"},"SIRIU":{t:3,a:0,rh:0,rg:0,c:0,p:"Secolul 20"},"SMEENI":{t:15,a:0,rh:1,rg:14,c:0,p:"Alte perioade"},"STÂLPU":{t:12,a:4,rh:5,rg:7,c:0,p:"Secolul 17"},"SĂGEATA":{t:4,a:0,rh:4,rg:0,c:0,p:"Secolul 19"},"SĂHĂTENI":{t:17,a:0,rh:2,rg:15,c:0,p:"Alte perioade"},"SĂPOCA":{t:8,a:0,rh:3,rg:5,c:0,p:"Secolul 17"},"SĂRULEŞTI":{t:5,a:0,rh:5,rg:0,c:1,p:"Secolul 20"},"TISĂU":{t:17,a:5,rh:17,rg:0,c:1,p:"Secolul XVI"},"TOPLICENI":{t:6,a:4,rh:6,rg:0,c:2,p:"Secolul 17"},"ULMENI":{t:15,a:0,rh:1,rg:11,c:0,p:"Secolul XIX"},"VADU PAŞII":{t:1,a:0,rh:0,rg:1,c:0,p:"Secolul III"},"VALEA RÂMNICULUI":{t:20,a:0,rh:0,rg:20,c:0,p:"Secolul IV"},"VERNEŞTI":{t:40,a:10,rh:12,rg:26,c:1,p:"Secolul II"},"VINTILĂ VODĂ":{t:13,a:0,rh:13,rg:0,c:5,p:"Secolul 19"},"VIPEREŞTI":{t:3,a:0,rh:0,rg:3,c:0,p:"Secolul XVI"},"ZIDURI":{t:25,a:0,rh:0,rg:25,c:0,p:"Alte perioade"},"ZĂRNEŞTI":{t:15,a:0,rh:1,rg:14,c:0,p:"Secolul IV"},"ŢINTEŞTI":{t:3,a:0,rh:1,rg:2,c:0,p:"Alte perioade"}};
+        // BAZA DE DATE ANALITICĂ COMPLETĂ (76 UAT-uri) EXTRASĂ DIN EXCEL
+        const uatData = {"AMARU":{t:6,a:0,rh:0,rg:6,c:0,p:"Secolul IV",ty:"Așezare",cl:"Nespecificat"},"BALTA ALBĂ":{t:7,a:0,rh:3,rg:4,c:2,p:"Secolul III",ty:"Necropolă",cl:"Nespecificat"},"BECENI":{t:1,a:0,rh:1,rg:0,c:0,p:"Secolul XX",ty:"Casă",cl:"Nespecificat"},"BERCA":{t:19,a:13,rh:14,rg:3,c:5,p:"Secolul XVII",ty:"Biserică",cl:"Biserica Ortodoxă Română"},"BISOCA":{t:3,a:3,rh:3,rg:0,c:0,p:"Secolul XVIII",ty:"Biserică",cl:"Biserica Ortodoxă Română"},"BOLDU":{t:1,a:0,rh:1,rg:0,c:0,p:"Secolul 20",ty:"Casă",cl:"Nespecificat"},"BOZIORU":{t:48,a:16,rh:31,rg:17,c:2,p:"Secolul XVI",ty:"Așezare",cl:"Biserica Ortodoxă Română"},"BREAZA":{t:14,a:0,rh:0,rg:9,c:0,p:"Nespecificat",ty:"Așezare",cl:"Biserica Ortodoxă Română"},"BRĂDEANU":{t:1,a:0,rh:0,rg:0,c:0,p:"Secolul XVIII",ty:"Cruce de piatră",cl:"Biserica Ortodoxă Română"},"BRĂEŞTI":{t:7,a:0,rh:6,rg:1,c:1,p:"Secolul 19",ty:"Biserică de lemn",cl:"Biserica Ortodoxă Română"},"BUDA":{t:1,a:0,rh:1,rg:0,c:0,p:"Secolul 18",ty:"Biserică de lemn",cl:"Biserica Ortodoxă Română"},"BUZĂU":{t:82,a:19,rh:53,rg:15,c:3,p:"Secolul 20",ty:"Casă",cl:"Biserica Ortodoxă Română"},"C. A. ROSETTI":{t:3,a:0,rh:0,rg:1,c:0,p:"Secolul III",ty:"Cruce de piatră",cl:"Biserica Ortodoxă Română"},"C.A. ROSETTI":{t:4,a:0,rh:0,rg:4,c:0,p:"Nespecificat",ty:"Așezare",cl:"Nespecificat"},"CALVINI":{t:5,a:1,rh:4,rg:1,c:1,p:"Alte perioade",ty:"Casă",cl:"Biserica Ortodoxă Română"},"CERNĂTEŞTI":{t:14,a:0,rh:0,rg:13,c:1,p:"Alte perioade",ty:"Așezare",cl:"Biserica Ortodoxă Română"},"CHILIILE":{t:3,a:0,rh:3,rg:0,c:0,p:"Secolul 19",ty:"Casă",cl:"Biserica Ortodoxă Română"},"CHIOJDU":{t:7,a:1,rh:6,rg:0,c:2,p:"Secolul XIX",ty:"Casă",cl:"Biserica Ortodoxă Română"},"CISLĂU":{t:8,a:0,rh:6,rg:1,c:1,p:"Secolul 18",ty:"Clopotniță",cl:"Biserica Ortodoxă Română"},"COCHIRLEANCA":{t:6,a:0,rh:0,rg:6,c:0,p:"Secolul IV",ty:"Așezare",cl:"Nespecificat"},"COLŢI":{t:4,a:3,rh:3,rg:1,c:0,p:"Secolul XVI",ty:"Biserică rupestră",cl:"Biserica Ortodoxă Română"},"COSTEŞTI":{t:7,a:0,rh:0,rg:7,c:0,p:"Nespecificat",ty:"Așezare",cl:"Nespecificat"},"COZIENI":{t:12,a:0,rh:10,rg:2,c:0,p:"Secolul 19",ty:"Biserică de lemn",cl:"Biserica Ortodoxă Română"},"CĂNEŞTI":{t:1,a:0,rh:0,rg:1,c:0,p:"Alte perioade",ty:"Așezare",cl:"Nespecificat"},"CĂTINA":{t:9,a:0,rh:9,rg:0,c:2,p:"Secolul 20",ty:"Casă",cl:"Biserica Ortodoxă Română"},"FLORICA":{t:1,a:0,rh:0,rg:0,c:0,p:"Secolul XVIII",ty:"Cruce de piatră",cl:"Biserica Ortodoxă Română"},"GHERGHEASA":{t:8,a:0,rh:0,rg:8,c:0,p:"Alte perioade",ty:"Așezare",cl:"Nespecificat"},"GHERĂSENI":{t:21,a:0,rh:0,rg:21,c:0,p:"Alte perioade",ty:"Necropolă",cl:"Nespecificat"},"GLODEANU-SILIŞTEA":{t:8,a:0,rh:1,rg:6,c:0,p:"Secolul IV",ty:"Așezare",cl:"Biserica Ortodoxă Română"},"GREABĂNU":{t:1,a:0,rh:1,rg:0,c:0,p:"Secolul 19",ty:"Biserică",cl:"Biserica Ortodoxă Română"},"GREBĂNU":{t:8,a:4,rh:8,rg:0,c:0,p:"Secolul 19",ty:"Casă",cl:"Biserica Ortodoxă Română"},"GURA TEGHII":{t:1,a:0,rh:1,rg:0,c:0,p:"Secolul XIX",ty:"Conac",cl:"Nespecificat"},"LARGU":{t:7,a:0,rh:1,rg:6,c:0,p:"Secolul III",ty:"Așezare",cl:"Biserica Ortodoxă Română"},"LOPĂTARI":{t:5,a:0,rh:5,rg:0,c:0,p:"Secolul XX",ty:"Casă",cl:"Nespecificat"},"LUCIU":{t:2,a:0,rh:0,rg:2,c:0,p:"Secolul XII",ty:"Așezare",cl:"Nespecificat"},"MEREI":{t:73,a:8,rh:11,rg:56,c:2,p:"Alte perioade",ty:"Așezare",cl:"Biserica Ortodoxă Română"},"MOVILA BANULUI":{t:3,a:0,rh:0,rg:2,c:0,p:"Secolul IX",ty:"Așezare",cl:"Biserica Ortodoxă Română"},"MURGEŞTI":{t:1,a:0,rh:0,rg:1,c:0,p:"Alte perioade",ty:"Tell",cl:"Nespecificat"},"MÂNZĂLEŞTI":{t:3,a:0,rh:3,rg:0,c:0,p:"Secolul XX",ty:"Casă",cl:"Biserica Ortodoxă Română"},"MĂGURA":{t:12,a:3,rh:11,rg:0,c:6,p:"Secolul 20",ty:"Casă",cl:"Biserica Ortodoxă Română"},"MĂRGĂRITEŞTI":{t:6,a:3,rh:6,rg:0,c:0,p:"Secolul 18",ty:"Biserică de lemn",cl:"Biserica Ortodoxă Română"},"MĂRĂCINENI":{t:1,a:0,rh:1,rg:0,c:0,p:"Secolul XVIII",ty:"Conac",cl:"Nespecificat"},"NEHOIU":{t:17,a:3,rh:6,rg:11,c:0,p:"Secolul XIX",ty:"Așezare",cl:"Biserica Ortodoxă Română"},"NĂENI":{t:21,a:4,rh:3,rg:18,c:0,p:"Alte perioade",ty:"Așezare",cl:"Biserica Ortodoxă Română"},"ODĂILE":{t:1,a:0,rh:1,rg:0,c:0,p:"Secolul 19",ty:"Biserică de lemn",cl:"Biserica Ortodoxă Română"},"PADINA":{t:1,a:0,rh:0,rg:0,c:0,p:"Secolul 19",ty:"Cruce",cl:"Biserica Ortodoxă Română"},"PARDOŞI":{t:1,a:0,rh:1,rg:0,c:0,p:"Secolul 18",ty:"Biserică de lemn",cl:"Biserica Ortodoxă Română"},"PIETROASELE":{t:76,a:5,rh:2,rg:71,c:0,p:"Alte perioade",ty:"Așezare",cl:"Biserica Ortodoxă Română"},"PODGORIA":{t:5,a:0,rh:2,rg:3,c:1,p:"Alte perioade",ty:"Așezare",cl:"Biserica Ortodoxă Română"},"POŞTA CÂLNĂU":{t:13,a:0,rh:0,rg:13,c:0,p:"Alte perioade",ty:"Necropolă",cl:"Nespecificat"},"PÂRSCOV":{t:15,a:0,rh:6,rg:7,c:1,p:"Secolul 19",ty:"Așezare",cl:"Biserica Ortodoxă Română"},"PĂNĂTĂU":{t:10,a:1,rh:4,rg:1,c:0,p:"Secolul 19",ty:"Cruce de piatră",cl:"Biserica Ortodoxă Română"},"PĂTÂRLAGELE":{t:25,a:0,rh:6,rg:18,c:0,p:"Alte perioade",ty:"Așezare",cl:"Biserica Ortodoxă Română"},"RACOVIŢENI":{t:4,a:0,rh:0,rg:4,c:0,p:"Nespecificat",ty:"Așezare",cl:"Nespecificat"},"RUŞEŢU":{t:1,a:0,rh:1,rg:0,c:0,p:"Secolul XIX",ty:"Conac",cl:"Nespecificat"},"RÂMNICELU":{t:11,a:0,rh:2,rg:9,c:0,p:"Alte perioade",ty:"Așezare",cl:"Nespecificat"},"RÂMNICU SĂRAT":{t:32,a:15,rh:29,rg:0,c:1,p:"Secolul 18",ty:"Casă",cl:"Biserica Ortodoxă Română"},"SCORŢOASA":{t:3,a:0,rh:1,rg:2,c:0,p:"Alte perioade",ty:"Așezare",cl:"Nespecificat"},"SIRIU":{t:3,a:0,rh:0,rg:0,c:0,p:"Secolul 20",ty:"Cimitir",cl:"Nespecificat"},"SMEENI":{t:15,a:0,rh:1,rg:14,c:0,p:"Nespecificat",ty:"Așezare",cl:"Biserica Ortodoxă Română"},"STÂLPU":{t:12,a:4,rh:5,rg:7,c:0,p:"Secolul 17",ty:"Așezare",cl:"Biserica Ortodoxă Română"},"SĂGEATA":{t:4,a:0,rh:4,rg:0,c:0,p:"Secolul 19",ty:"Biserică",cl:"Biserica Ortodoxă Română"},"SĂHĂTENI":{t:17,a:0,rh:2,rg:15,c:0,p:"Alte perioade",ty:"Așezare",cl:"Nespecificat"},"SĂPOCA":{t:8,a:0,rh:3,rg:5,c:0,p:"Secolul 17",ty:"Așezare",cl:"Biserica Ortodoxă Română"},"SĂRULEŞTI":{t:5,a:0,rh:5,rg:0,c:1,p:"Secolul 20",ty:"Casă",cl:"Nespecificat"},"TISĂU":{t:17,a:5,rh:17,rg:0,c:1,p:"Secolul XVI",ty:"Biserică",cl:"Biserica Ortodoxă Română"},"TOPLICENI":{t:6,a:4,rh:6,rg:0,c:2,p:"Secolul 17",ty:"Biserică",cl:"Biserica Ortodoxă Română"},"ULMENI":{t:15,a:0,rh:1,rg:11,c:0,p:"Secolul XIX",ty:"Așezare",cl:"Biserica Ortodoxă Română"},"VADU PAŞII":{t:1,a:0,rh:0,rg:1,c:0,p:"Secolul III",ty:"Așezare",cl:"Nespecificat"},"VALEA RÂMNICULUI":{t:20,a:0,rh:0,rg:20,c:0,p:"Secolul IV",ty:"Așezare",cl:"Nespecificat"},"VERNEŞTI":{t:40,a:10,rh:12,rg:26,c:1,p:"Nespecificat",ty:"Așezare",cl:"Biserica Ortodoxă Română"},"VINTILĂ VODĂ":{t:13,a:0,rh:13,rg:0,c:5,p:"Secolul 19",ty:"Casă",cl:"Biserica Ortodoxă Română"},"VIPEREŞTI":{t:3,a:0,rh:0,rg:3,c:0,p:"Nespecificat",ty:"Așezare",cl:"Nespecificat"},"ZIDURI":{t:25,a:0,rh:0,rg:25,c:0,p:"Alte perioade",ty:"Necropolă",cl:"Nespecificat"},"ZĂRNEŞTI":{t:15,a:0,rh:1,rg:14,c:0,p:"Secolul IV",ty:"Așezare",cl:"Nespecificat"},"ŢINTEŞTI":{t:3,a:0,rh:1,rg:2,c:0,p:"Alte perioade",ty:"Tell",cl:"Nespecificat"}};
 
-        // Coordonate centre UAT (aproximative pentru vizualizare)
+        // Coordonate aproximative centre UAT (76 puncte)
         const coords = {"AMARU":[44.92,26.58],"BALTA ALBĂ":[45.30,27.28],"BECENI":[45.40,26.75],"BERCA":[45.28,26.68],"BISOCA":[45.54,26.71],"BOLDU":[45.33,27.23],"BOZIORU":[45.38,26.50],"BREAZA":[45.07,26.53],"BRĂDEANU":[44.93,26.85],"BRĂEŞTI":[45.45,26.50],"BUDA":[45.50,26.90],"BUZĂU":[45.15,26.82],"C. A. ROSETTI":[45.03,27.15],"C.A. ROSETTI":[45.03,27.15],"CALVINI":[45.24,26.30],"CERNĂTEŞTI":[45.27,26.75],"CHILIILE":[45.45,26.63],"CHIOJDU":[45.35,26.21],"CISLĂU":[45.24,26.37],"COCHIRLEANCA":[45.20,27.03],"COLŢI":[45.40,26.43],"COSTEŞTI":[45.05,26.75],"COZIENI":[45.33,26.43],"CĂNEŞTI":[45.38,26.60],"CĂTINA":[45.29,26.25],"FLORICA":[44.90,26.77],"GHERGHEASA":[45.25,27.18],"GHERĂSENI":[45.03,26.87],"GLODEANU-SILIŞTEA":[44.83,26.80],"GREABĂNU":[45.38,26.97],"GREBĂNU":[45.38,26.97],"GURA TEGHII":[45.50,26.43],"LARGU":[44.97,27.15],"LOPĂTARI":[45.48,26.58],"LUCIU":[44.93,27.10],"MEREI":[45.13,26.68],"MOVILA BANULUI":[44.98,26.78],"MURGEŞTI":[45.40,26.90],"MÂNZĂLEŞTI":[45.50,26.67],"MĂGURA":[45.23,26.60],"MĂRGĂRITEŞTI":[45.43,26.85],"MĂRĂCINENI":[45.18,26.83],"NEHOIU":[45.42,26.30],"NĂENI":[45.09,26.48],"ODĂILE":[45.38,26.68],"PADINA":[44.85,27.12],"PARDOŞI":[45.45,26.88],"PIETROASELE":[45.09,26.58],"PODGORIA":[45.42,27.02],"POŞTA CÂLNĂU":[45.23,26.90],"PÂRSCOV":[45.28,26.45],"PĂNĂTĂU":[45.33,26.38],"PĂTÂRLAGELE":[45.32,26.35],"RACOVIŢENI":[45.35,26.90],"RUŞEŢU":[44.95,27.20],"RÂMNICELU":[45.37,27.13],"RÂMNICU SĂRAT":[45.38,27.05],"SCORŢOASA":[45.37,26.68],"SIRIU":[45.48,26.25],"SMEENI":[44.98,26.90],"STÂLPU":[45.07,26.71],"SĂGEATA":[45.10,27.05],"SĂHĂTENI":[45.03,26.53],"SĂPOCA":[45.23,26.75],"SĂRULEŞTI":[45.47,26.77],"TISĂU":[45.20,26.55],"TOPLICENI":[45.42,27.00],"ULMENI":[45.08,26.61],"VADU PAŞII":[45.15,26.88],"VALEA RÂMNICULUI":[45.35,27.05],"VERNEŞTI":[45.20,26.72],"VINTILĂ VODĂ":[45.47,26.72],"VIPEREŞTI":[45.23,26.45],"ZIDURI":[45.30,27.08],"ZĂRNEŞTI":[45.30,26.87],"ŢINTEŞTI":[45.05,26.93]};
 
         const map = L.map('map', { zoomControl: false }).setView([45.2, 26.8], 9);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
 
-        function getColor(a) { return a > 10 ? '#ef4444' : a > 0 ? '#f59e0b' : '#3b82f6'; }
+        function getMarkerColor(a) { return a > 10 ? '#ef4444' : a > 0 ? '#f59e0b' : '#6366f1'; }
 
         Object.keys(coords).forEach(name => {
             const loc = uatData[name];
             if(!loc) return;
 
-            const marker = L.circleMarker(coords[name], {
-                radius: Math.sqrt(loc.t) * 2.5 + 2,
-                fillColor: getColor(loc.a),
-                color: "#fff",
-                weight: 1,
-                opacity: 0.4,
-                fillOpacity: 0.7
+            const m = L.circleMarker(coords[name], {
+                radius: Math.sqrt(loc.t) * 2.5 + 3,
+                fillColor: getMarkerColor(loc.a),
+                color: "#fff", weight: 1, opacity: 0.4, fillOpacity: 0.8
             }).addTo(map);
 
-            marker.on('click', () => {
-                document.getElementById('no-data').classList.add('hidden');
-                document.getElementById('data-panel').classList.remove('hidden');
+            m.on('click', () => {
+                document.getElementById('empty-state').classList.add('hidden');
+                document.getElementById('data-content').classList.remove('hidden');
                 
-                document.getElementById('name-display').innerText = name;
-                document.getElementById('period-display').innerText = `DOMINĂ: ${loc.p}`;
-                document.getElementById('val-arh').innerText = loc.rh;
-                document.getElementById('val-arg').innerText = loc.rg;
+                document.getElementById('uat-name').innerText = name;
+                document.getElementById('uat-period').innerText = `EPOCA: ${loc.p}`;
+                document.getElementById('val-rh').innerText = loc.rh;
+                document.getElementById('val-rg').innerText = loc.rg;
+                document.getElementById('val-type-cult').innerText = `${loc.ty} / ${loc.cl}`;
                 document.getElementById('val-crit').innerText = loc.c;
                 
                 const perc = Math.min((loc.c / (loc.t || 1)) * 100 * 5, 100);
                 document.getElementById('crit-bar').style.width = perc + '%';
             });
-            
-            marker.bindTooltip(`${name}: ${loc.t} monumente`);
+            m.bindTooltip(name);
         });
-
         L.control.zoom({ position: 'bottomright' }).addTo(map);
     </script>
 </body>
