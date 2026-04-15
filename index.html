@@ -3,81 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patrimoniu Buzău</title>
+    <title>Buzău Heritage Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <style>#map { height: 600px; width: 100%; border-radius: 15px; background: #f0f0f0; }</style>
+    <style>
+        #map { height: 650px; width: 100%; border-radius: 20px; z-index: 1; }
+        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+        .stat-badge { transition: all 0.3s ease; }
+        .stat-badge:hover { transform: translateY(-5px); }
+    </style>
 </head>
-<body class="bg-slate-50 p-4">
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
 
-    <div class="max-w-6xl mx-auto flex flex-col gap-6">
-        <header class="bg-indigo-900 p-6 rounded-2xl shadow-xl text-white">
-            <h1 class="text-2xl font-black uppercase italic">🏛️ Monumente Buzău v2.0</h1>
-            <p class="text-indigo-300 text-sm">Harta punctelor de interes (Fără erori de încărcare)</p>
-        </header>
+    <header class="p-6 max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+            <div>
+                <h1 class="text-4xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">BUZĂU PATRIMONIU</h1>
+                <p class="text-slate-400 font-medium">Analiză avansată a celor 892 de monumente istorice</p>
+            </div>
+            <div class="flex gap-4">
+                <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700">
+                    <span class="block text-xs uppercase text-slate-500 font-bold">Total Obiective</span>
+                    <span class="text-2xl font-black text-white">892</span>
+                </div>
+                <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700">
+                    <span class="block text-xs uppercase text-slate-500 font-bold">Importanță Națională</span>
+                    <span class="text-2xl font-black text-amber-400">125</span>
+                </div>
+            </div>
+        </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-md border border-slate-200">
-                <h2 id="uat-name" class="text-xl font-bold text-slate-800">Selectează un punct</h2>
-                <div id="details" class="mt-4 space-y-4">
-                    <p class="text-slate-500 text-sm">Dă click pe cercurile colorate de pe hartă.</p>
+            <div class="lg:col-span-1 space-y-6">
+                <div id="selection-card" class="bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-2xl overflow-hidden relative">
+                    <div id="no-selection">
+                        <h3 class="text-xl font-bold mb-2">Explorează Județul</h3>
+                        <p class="text-slate-400 text-sm">Apasă pe un punct de pe hartă pentru a vedea analiza detaliată a localității respective.</p>
+                        <div class="mt-6 animate-pulse bg-slate-700 h-2 w-full rounded-full"></div>
+                    </div>
+
+                    <div id="details" class="hidden space-y-4">
+                        <h2 id="uat-name" class="text-3xl font-black text-white leading-none uppercase">Localitate</h2>
+                        <div class="flex items-center gap-2">
+                            <span id="period-tag" class="bg-indigo-500/20 text-indigo-400 text-[10px] px-2 py-1 rounded-full font-bold border border-indigo-500/30 italic">Secolul XVIII</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3 mt-4">
+                            <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700">
+                                <span class="text-[10px] text-slate-500 font-bold uppercase">Arhitectură</span>
+                                <div id="stat-arh" class="text-xl font-bold text-sky-400">0</div>
+                            </div>
+                            <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700">
+                                <span class="text-[10px] text-slate-500 font-bold uppercase">Arheologie</span>
+                                <div id="stat-arh-geo" class="text-xl font-bold text-emerald-400">0</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-rose-500/10 p-4 rounded-2xl border border-rose-500/20">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-xs font-bold text-rose-400">ALERTĂ DEGRADARE</span>
+                                <span id="stat-crit" class="text-lg font-black text-rose-500">0</span>
+                            </div>
+                            <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                                <div id="crit-bar" class="bg-rose-500 h-full" style="width: 0%"></div>
+                            </div>
+                            <p class="text-[9px] text-rose-400/60 mt-2 uppercase font-bold tracking-widest">Monumente în stare proastă sau ruine</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/30 p-4 rounded-2xl border border-slate-700 text-[11px] text-slate-500 leading-relaxed">
+                    <h4 class="font-bold text-slate-400 mb-1 uppercase tracking-wider">Cum am calculat?</h4>
+                    Datele sunt agregate din LMI. "Degradarea" include stările: rea, ruine, demolat, foarte proastă. Epoca dominantă este extrasă din datarea principală.
                 </div>
             </div>
 
-            <div class="lg:col-span-3">
-                <div id="map" class="shadow-inner border-4 border-white"></div>
+            <div class="lg:col-span-3 relative group">
+                <div id="map" class="shadow-2xl border-8 border-slate-800"></div>
+                <div class="absolute bottom-6 right-6 z-[1000] bg-slate-900/90 p-4 rounded-2xl border border-slate-700 backdrop-blur-md text-xs space-y-2">
+                    <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-rose-500"></span> <span>Peste 10 monumente Clasa A</span></div>
+                    <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-amber-500"></span> <span>Are monumente Clasa A</span></div>
+                    <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-indigo-500"></span> <span>Doar Clasa B</span></div>
+                </div>
             </div>
         </div>
-    </div>
+    </header>
 
     <script>
-        // Coordonate aproximative pentru centrele UAT-urilor din Buzău
-        const localitati = [
-            {n: "BUZĂU", lat: 45.15, lon: 26.82, t: 82, a: 19},
-            {n: "RÂMNICU SĂRAT", lat: 45.38, lon: 27.05, t: 32, a: 15},
-            {n: "PIETROASELE", lat: 45.09, lon: 26.58, t: 76, a: 5},
-            {n: "MEREI", lat: 45.13, lon: 26.68, t: 73, a: 8},
-            {n: "BOZIORU", lat: 45.38, lon: 26.50, t: 48, a: 16},
-            {n: "VERNEŞTI", lat: 45.20, lon: 26.72, t: 40, a: 10},
-            {n: "NEHOIU", lat: 45.42, lon: 26.30, t: 17, a: 3},
-            {n: "BERCA", lat: 45.28, lon: 26.68, t: 19, a: 13},
-            {n: "NĂENI", lat: 45.09, lon: 26.48, t: 21, a: 4},
-            {n: "PĂTÂRLAGELE", lat: 45.32, lon: 26.35, t: 25, a: 0}
-        ];
+        // BAZA DE DATE ANALITICĂ (Generată din Excel-ul tău)
+        const data = {"AMARU":{t:6,a:0,rh:0,rg:6,c:0,p:"Secolul IV"},"BALTA ALBĂ":{t:7,a:0,rh:3,rg:4,c:2,p:"Secolul III"},"BERCA":{t:19,a:13,rh:14,rg:3,c:5,p:"Secolul XVII"},"BISOCA":{t:3,a:3,rh:3,rg:0,c:0,p:"Secolul XVIII"},"BOZIORU":{t:48,a:16,rh:31,rg:17,c:2,p:"Secolul XVI"},"BREAZA":{t:14,a:0,rh:0,rg:9,c:0,p:"Secolul XVIII"},"BUZĂU":{t:82,a:19,rh:53,rg:15,c:3,p:"Secolul XX"},"CALVINI":{t:5,a:1,rh:4,rg:1,c:1,p:"Alte perioade"},"CHIOJDU":{t:7,a:1,rh:6,rg:0,c:2,p:"Secolul XIX"},"CISLĂU":{t:8,a:0,rh:6,rg:1,c:1,p:"Secolul XVIII"},"COLŢI":{t:4,a:3,rh:3,rg:1,c:0,p:"Secolul XVI"},"MEREI":{t:73,a:8,rh:11,rg:56,c:2,p:"Antichitate"},"MĂGURA":{t:12,a:3,rh:11,rg:0,c:6,p:"Secolul XX"},"NEHOIU":{t:17,a:3,rh:6,rg:11,c:0,p:"Secolul XIX"},"NĂENI":{t:21,a:4,rh:3,rg:18,c:0,p:"Alte perioade"},"PIETROASELE":{t:76,a:5,rh:2,rg:71,c:0,p:"Antichitate"},"RÂMNICU SĂRAT":{t:32,a:15,rh:29,rg:0,c:1,p:"Secolul XVIII"},"TISĂU":{t:17,a:5,rh:17,rg:0,c:1,p:"Secolul XVI"},"VERNEŞTI":{t:40,a:10,rh:12,rg:26,c:1,p:"Antichitate"}};
 
-        const map = L.map('map').setView([45.25, 26.8], 9);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        // Coordonate aproximative centre
+        const coords = {
+            "BUZĂU": [45.15, 26.82], "RÂMNICU SĂRAT": [45.38, 27.05], "PIETROASELE": [45.09, 26.58],
+            "MEREI": [45.13, 26.68], "BOZIORU": [45.38, 26.50], "VERNEŞTI": [45.20, 26.72],
+            "BERCA": [45.28, 26.68], "NĂENI": [45.09, 26.48], "NEHOIU": [45.42, 26.30],
+            "AMARU": [44.92, 26.58], "BALTA ALBĂ": [45.30, 27.28], "BISOCA": [45.54, 26.71],
+            "BREAZA": [45.07, 26.53], "CALVINI": [45.24, 26.30], "CHIOJDU": [45.35, 26.21],
+            "CISLĂU": [45.24, 26.37], "COLŢI": [45.40, 26.43], "MĂGURA": [45.23, 26.60],
+            "TISĂU": [45.20, 26.55]
+        };
 
-        function getRadius(t) { return Math.sqrt(t) * 3; }
-        function getColor(a) { return a > 10 ? '#ef4444' : a > 0 ? '#f59e0b' : '#3b82f6'; }
+        const map = L.map('map', { zoomControl: false }).setView([45.25, 26.8], 9);
+        
+        // Stilul hărții - Dark Mode CartoDB pentru aspect profesional
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
 
-        localitati.forEach(loc => {
-            const circle = L.circleMarker([loc.lat, loc.lon], {
-                radius: getRadius(loc.t),
-                fillColor: getColor(loc.a),
-                color: "#fff",
-                weight: 2,
-                opacity: 1,
+        function getMarkerColor(loc) {
+            if(loc.a > 10) return '#f43f5e'; // Rose-500
+            if(loc.a > 0) return '#f59e0b'; // Amber-500
+            return '#6366f1'; // Indigo-500
+        }
+
+        Object.keys(coords).forEach(name => {
+            const loc = data[name];
+            if(!loc) return;
+
+            const circle = L.circleMarker(coords[name], {
+                radius: Math.sqrt(loc.t) * 2.5 + 2,
+                fillColor: getMarkerColor(loc),
+                color: '#fff',
+                weight: 1,
+                opacity: 0.5,
                 fillOpacity: 0.8
             }).addTo(map);
 
             circle.on('click', () => {
-                document.getElementById('uat-name').innerText = loc.n;
-                document.getElementById('details').innerHTML = `
-                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                        <span class="text-xs font-bold text-slate-400 uppercase">Total Monumente</span>
-                        <div class="text-3xl font-black text-indigo-600">${loc.t}</div>
-                    </div>
-                    <div class="p-4 bg-amber-50 rounded-xl border border-amber-100">
-                        <span class="text-xs font-bold text-amber-500 uppercase">Grupa A (Național)</span>
-                        <div class="text-3xl font-black text-amber-600">${loc.a}</div>
-                    </div>
-                `;
+                document.getElementById('no-selection').classList.add('hidden');
+                document.getElementById('details').classList.remove('hidden');
+                
+                document.getElementById('uat-name').innerText = name;
+                document.getElementById('period-tag').innerText = `EPOCA: ${loc.p}`;
+                document.getElementById('stat-arh').innerText = loc.rh;
+                document.getElementById('stat-arh-geo').innerText = loc.rg;
+                document.getElementById('stat-crit').innerText = loc.c;
+                
+                // Calcul bară progres degradare
+                const critPercent = Math.min((loc.c / (loc.t || 1)) * 100 * 5, 100); 
+                document.getElementById('crit-bar').style.width = critPercent + '%';
             });
 
-            circle.bindTooltip(`${loc.n}: ${loc.t} monumente`);
+            circle.bindTooltip(`${name}: ${loc.t} monumente`, { className: 'glass text-slate-900 border-none px-4 py-2 rounded-lg font-bold' });
         });
+
+        L.control.zoom({ position: 'bottomleft' }).addTo(map);
     </script>
 </body>
 </html>
